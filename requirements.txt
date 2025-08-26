@@ -1,0 +1,255 @@
+# =====================================================
+# SISTEMA DE PREDICCIÓN DE QUIEBRAS EMPRESARIALES
+# Dependencias de Python
+# =====================================================
+
+# =====================================================
+# CORE DEPENDENCIES
+# =====================================================
+# Framework web y API
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+flask==3.0.0
+flask-cors==4.0.0
+
+# Base de datos y ORM
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+alembic==1.13.1
+
+# Configuración y variables de entorno
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# =====================================================
+# MACHINE LEARNING Y ANÁLISIS DE DATOS
+# =====================================================
+# Librerías principales de ML
+scikit-learn==1.3.2
+xgboost==2.0.2
+imbalanced-learn==0.11.0
+
+# Manipulación y análisis de datos
+pandas==2.1.4
+numpy==1.25.2
+scipy==1.11.4
+
+# Serialización de modelos
+joblib==1.3.2
+pickle5==0.0.12
+
+# Métricas y evaluación
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.17.0
+
+# =====================================================
+# FRONTEND Y VISUALIZACIÓN
+# =====================================================
+# Streamlit para la interfaz web
+streamlit==1.29.0
+streamlit-aggrid==0.3.4.post3
+streamlit-plotly-events==0.0.6
+
+# Componentes adicionales de Streamlit
+streamlit-option-menu==0.3.6
+streamlit-authenticator==0.2.3
+
+# =====================================================
+# PROCESAMIENTO DE DATOS
+# =====================================================
+# Formatos de archivo
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+pyarrow==14.0.2
+fastparquet==2023.10.1
+
+# APIs y web scraping
+requests==2.31.0
+httpx==0.25.2
+beautifulsoup4==4.12.2
+aiohttp==3.9.1
+
+# =====================================================
+# SISTEMA DE ALERTAS Y NOTIFICACIONES
+# =====================================================
+# Email
+smtplib2==0.2.1
+email-validator==2.1.0
+
+# Slack
+slack-sdk==3.26.1
+
+# Microsoft Teams
+pymsteams==0.2.2
+
+# Notificaciones push
+plyer==2.1.0
+
+# =====================================================
+# INTEGRACIÓN CON POWER BI
+# =====================================================
+# Microsoft Graph API
+msal==1.25.0
+requests-oauthlib==1.3.1
+
+# Power BI REST API
+powerbiclient==3.1.1
+
+# =====================================================
+# LOGGING Y MONITOREO
+# =====================================================
+# Logging avanzado
+loguru==0.7.2
+structlog==23.2.0
+
+# Monitoreo de aplicaciones
+prometheus-client==0.19.0
+psutil==5.9.6
+
+# =====================================================
+# TESTING Y DESARROLLO
+# =====================================================
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+httpx==0.25.2  # Para testing de APIs
+
+# Linting y formateo
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+mypy==1.7.1
+
+# Pre-commit hooks
+pre-commit==3.6.0
+
+# =====================================================
+# UTILIDADES Y HERRAMIENTAS
+# =====================================================
+# Fechas y tiempo
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Validación de datos
+cerberus==1.3.5
+marshmallow==3.20.1
+
+# Criptografía y seguridad
+cryptography==41.0.8
+bcrypt==4.1.2
+passlib[bcrypt]==1.7.4
+
+# Utilidades generales
+click==8.1.7
+tqdm==4.66.1
+rich==13.7.0
+
+# Manejo de archivos
+pathlib2==2.3.7.post1
+send2trash==1.8.2
+
+# =====================================================
+# ORQUESTACIÓN Y PIPELINES (OPCIONAL)
+# =====================================================
+# Apache Airflow (comentado por defecto, descomentar si se usa)
+# apache-airflow==2.7.3
+# apache-airflow-providers-postgres==5.7.1
+
+# Prefect (alternativa a Airflow)
+# prefect==2.14.11
+
+# =====================================================
+# APIS EXTERNAS PARA DATOS FINANCIEROS
+# =====================================================
+# APIs de datos financieros
+yfinance==0.2.28
+alpha-vantage==2.3.1
+quandl==3.7.0
+
+# Federal Reserve Economic Data (FRED)
+fredapi==0.5.1
+
+# =====================================================
+# DEPLOYMENT Y PRODUCCIÓN
+# =====================================================
+# WSGI/ASGI servers
+gunicorn==21.2.0
+uvicorn[standard]==0.24.0
+
+# Contenedores y deployment
+docker==6.1.3
+
+# Configuración de producción
+python-multipart==0.0.6
+slowapi==0.1.9  # Rate limiting
+
+# =====================================================
+# DESARROLLO Y DOCUMENTACIÓN
+# =====================================================
+# Documentación
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# Jupyter notebooks (para análisis exploratorio)
+jupyter==1.0.0
+ipykernel==6.27.1
+nbconvert==7.12.0
+
+# =====================================================
+# VERSIONES ESPECÍFICAS PARA COMPATIBILIDAD
+# =====================================================
+# Asegurar compatibilidad entre librerías
+setuptools>=65.0.0
+wheel>=0.38.0
+pip>=23.0.0
+
+# =====================================================
+# DEPENDENCIAS OPCIONALES
+# =====================================================
+# Descomentar según necesidades específicas:
+
+# Para análisis de series temporales
+# statsmodels==0.14.0
+# prophet==1.1.5
+
+# Para deep learning (si se implementan modelos de NN)
+# tensorflow==2.15.0
+# torch==2.1.1
+
+# Para procesamiento de texto (si se añaden features de NLP)
+# nltk==3.8.1
+# spacy==3.7.2
+
+# Para análisis geoespacial
+# geopandas==0.14.1
+# folium==0.15.0
+
+# Para optimización de hiperparámetros
+# optuna==3.4.0
+# hyperopt==0.2.7
+
+# =====================================================
+# NOTAS DE INSTALACIÓN
+# =====================================================
+#
+# Para instalar todas las dependencias:
+# pip install -r requirements.txt
+#
+# Para instalar solo las dependencias de producción:
+# pip install -r requirements.txt --no-deps
+#
+# Para crear un entorno virtual:
+# python -m venv venv
+# source venv/bin/activate  # En Linux/Mac
+# venv\Scripts\activate     # En Windows
+#
+# Para generar este archivo desde un entorno existente:
+# pip freeze > requirements.txt
+#
+# =====================================================
+

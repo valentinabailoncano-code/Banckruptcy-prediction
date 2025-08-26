@@ -1,0 +1,97 @@
+graph TB
+    subgraph "Frontend Layer"
+        UI[Streamlit App<br/>📱 Interactive UI]
+        PBI[Power BI Dashboards<br/>📊 Executive Reports]
+        API_CLIENT[API Clients<br/>🔌 External Integrations]
+    end
+    
+    subgraph "API Gateway"
+        GATEWAY[API Gateway / Load Balancer<br/>🚪 Single Entry Point<br/>• Rate Limiting<br/>• Authentication<br/>• Load Balancing]
+    end
+    
+    subgraph "Application Layer"
+        PRED_API[Prediction API<br/>🎯 ML Predictions<br/>• Individual Scoring<br/>• Batch Processing<br/>• Altman Z-Score]
+        ALERT_SVC[Alerting Service<br/>🚨 Smart Alerts<br/>• Rule Engine<br/>• Multi-channel<br/>• Escalation]
+        TRAIN_SVC[Training Service<br/>🧠 ML Training<br/>• XGBoost Models<br/>• Hyperparameter Tuning<br/>• Model Validation]
+        PREPROC_SVC[Preprocessing Service<br/>⚙️ Data Processing<br/>• Feature Engineering<br/>• Data Cleaning<br/>• Ratio Calculation]
+        INGEST_SVC[Data Ingestion Service<br/>📥 Data Collection<br/>• API Integration<br/>• Data Validation<br/>• ETL Pipelines]
+    end
+    
+    subgraph "Data Layer"
+        POSTGRES[(PostgreSQL<br/>🗄️ Primary Database<br/>• Companies<br/>• Financial Data<br/>• Predictions<br/>• Models)]
+        REDIS[(Redis Cache<br/>⚡ In-Memory Cache<br/>• Prediction Cache<br/>• Session Store<br/>• Rate Limiting)]
+        S3[(Object Storage<br/>📦 File Storage<br/>• ML Models<br/>• Training Data<br/>• Backups<br/>• Logs)]
+    end
+    
+    subgraph "External Services"
+        SMTP[SMTP Server<br/>📧 Email Alerts]
+        SLACK[Slack API<br/>💬 Team Notifications]
+        TEAMS[Teams API<br/>👥 Corporate Alerts]
+        POWERBI_API[Power BI API<br/>📈 BI Integration]
+        DATA_APIS[Financial Data APIs<br/>💰 Market Data<br/>• Alpha Vantage<br/>• FRED<br/>• Quandl]
+    end
+    
+    subgraph "Infrastructure"
+        MONITORING[Monitoring Stack<br/>📊 Observability<br/>• Prometheus<br/>• Grafana<br/>• Health Checks]
+        LOGGING[Centralized Logging<br/>📝 Log Management<br/>• ELK Stack<br/>• Structured Logs<br/>• Audit Trail]
+        SCHEDULER[Task Scheduler<br/>⏰ Automation<br/>• Airflow/Cron<br/>• Model Training<br/>• Data Ingestion]
+    end
+    
+    %% Frontend to Gateway
+    UI --> GATEWAY
+    PBI --> GATEWAY
+    API_CLIENT --> GATEWAY
+    
+    %% Gateway to Services
+    GATEWAY --> PRED_API
+    GATEWAY --> ALERT_SVC
+    GATEWAY --> TRAIN_SVC
+    
+    %% Services to Data Layer
+    PRED_API --> POSTGRES
+    PRED_API --> REDIS
+    ALERT_SVC --> POSTGRES
+    TRAIN_SVC --> POSTGRES
+    TRAIN_SVC --> S3
+    PREPROC_SVC --> POSTGRES
+    INGEST_SVC --> POSTGRES
+    
+    %% External Integrations
+    ALERT_SVC --> SMTP
+    ALERT_SVC --> SLACK
+    ALERT_SVC --> TEAMS
+    PBI --> POWERBI_API
+    INGEST_SVC --> DATA_APIS
+    
+    %% Infrastructure
+    SCHEDULER --> TRAIN_SVC
+    SCHEDULER --> INGEST_SVC
+    SCHEDULER --> ALERT_SVC
+    
+    MONITORING --> PRED_API
+    MONITORING --> ALERT_SVC
+    MONITORING --> TRAIN_SVC
+    MONITORING --> PREPROC_SVC
+    MONITORING --> INGEST_SVC
+    
+    LOGGING --> PRED_API
+    LOGGING --> ALERT_SVC
+    LOGGING --> TRAIN_SVC
+    LOGGING --> PREPROC_SVC
+    LOGGING --> INGEST_SVC
+    
+    %% Styling
+    classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef gateway fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef service fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef data fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef infra fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    
+    class UI,PBI,API_CLIENT frontend
+    class GATEWAY gateway
+    class PRED_API,ALERT_SVC,TRAIN_SVC,PREPROC_SVC,INGEST_SVC service
+    class POSTGRES,REDIS,S3 data
+    class SMTP,SLACK,TEAMS,POWERBI_API,DATA_APIS external
+    class MONITORING,LOGGING,SCHEDULER infra
+

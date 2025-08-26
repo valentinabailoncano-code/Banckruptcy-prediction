@@ -1,0 +1,205 @@
+        mask = (df["proba_12m"].between(pmin,pmax)) & (df["risk_band"].isin(sel_band))
+        if sel_sector and "sector" in df.columns:  mask &= df["sector"].isin(sel_sector)
+        if sel_country and "country" in df.columns: mask &= df["country"].isin(sel_country)
+        dff = df[mask].copy()
+
+        # KPIs
+        k1,k2,k3,k4 = st.columns(4)
+        k1.metric("Empresas (filtradas)", f"{len(dff):,}")
+        k2.metric("Avg Prob", f"{dff['proba_12m'].mean():.2%}" if len(dff) else "n/a")
+        k3.metric("High (🟥)", f"{(dff['risk_band']=='High').mean():.2%}" if len(dff) else "n/a")
+        k4.metric("Medium (🟨)", f"{(dff['risk_band']=='Medium').mean():.2%}" if len(dff) else "n/a")
+
+        # Distribuciones
+        if len(dff):
+            if HAS_PLOTLY:
+                st.plotly_chart(px.histogram(dff, x="proba_12m", nbins=30, title="Distribución de probabilidades"),
+                                use_container_width=True)
+                counts = (dff["risk_band"].value_counts(dropna=False).rename_axis("risk_band").reset_index(name="n"))
+                st.plotly_chart(px.bar(counts, x="risk_band", y="n", title="Recuento por banda"), use_container_width=True)
+                if "sector" in dff.columns:
+                    st.plotly_chart(px.bar(dff.groupby(["sector","risk_band"]).size().reset_index(name="n"),
+                                           x="sector", y="n", color="risk_band", barmode="group", title="Riesgo por sector"),
+                                    use_container_width=True)
+            else:
+                st.bar_chart(dff["proba_12m"])
+                counts = (dff["risk_band"].value_counts(dropna=False).rename_axis("risk_band").reset_index(name="n"))
+                st.bar_chart(counts.set_index("risk_band"))
+
+        # Cohorts agregados
+        st.markdown("##### Cohorts (agregados rápidos)")
+        gcols = st.multiselect("Agrupar por", [c for c in ["sector","country","risk_band"] if c in dff.columns], default=["sector","risk_band"])
+        if gcols:
+            agg = dff.groupby(gcols).agg(n=("company_id","count") if "company_id" in dff.columns else ("proba_12m","count"),
+                                         avg_prob=("proba_12m","mean")).reset_index()
+            st.dataframe(agg.style.format({"avg_prob":"{:.2%}"}), use_container_width=True)
+
+        # Métricas si hay y_true
+        if HAS_SKLEARN and "y_true" in dff.columns:
+            try:
+                y_true_v = dff["y_true"].astype(int).values
+                proba_v = dff["proba_12m"].values
+                yhat = (proba_v>=high).astype(int)
+                rauc = roc_auc_score(y_true_v, proba_v); prauc = average_precision_score(y_true_v, proba_v); br = brier_score_loss(y_true_v, proba_v)
+                ksm = ks_stat(y_true_v, proba_v)
+                c1,c2,c3,c4 = st.columns(4)
+                c1.metric("ROC-AUC (cartera)", f"{rauc:.3f}")
+                c2.metric("PR-AUC (cartera)", f"{prauc:.3f}")
+                c3.metric("Brier (cartera)", f"{br:.4f}")
+                c4.metric("KS (cartera)", f"{ksm:.3f}")
+                tn, fp, fn, tp = confusion_matrix(y_true_v, yhat).ravel()
+                st.caption(f"Conf. Matrix @ HIGH={high:.2f} → TP={tp}, FP={fp}, TN={tn}, FN={fn}")
+            except Exception:
+                st.info("No se pudieron calcular métricas con la columna y_true.")
+
+        # Coste esperado + tuner umbral
+        st.markdown("#### 💰 Coste esperado y optimización de umbral")
+        if len(dff):
+            grid = np.round(np.linspace(0.05, 0.60, 24), 3)
+            costs = [expected_cost_from_probs(dff["proba_12m"].values, t, c_fp=c_fp, c_fn=c_fn) for t in grid]
+            costs_arr = np.array(costs, dtype=float)
+            valid = np.where(~np.isnan(costs_arr))[0]
+            best_t = float(grid[valid[np.argmin(costs_arr[valid])]]) if len(valid) else high
+            cur_cost = expected_cost_from_probs(dff["proba_12m"].values, high, c_fp, c_fn)
+            st.write(f"Coste esperado (aprox) con ALTO={high:.2f}: **{cur_cost:,.2f}**")
+            st.info(f"Sugerencia (mín. coste aprox): define ALTO ≈ **{best_t:.2f}** para esta cartera.")
+            if HAS_PLOTLY:
+                st.plotly_chart(px.line(x=grid, y=costs, labels={"x":"Umbral ALTO","y":"Coste esperado"}, title="Curva de coste vs umbral"),
+                                use_container_width=True)
+
+        # Anonimización de nombres (sólo visual)
+        view_df = dff.copy()
+        if mask_names and "name" in view_df.columns:
+            view_df["name"] = [f"Company {i+1:03d}" for i in range(len(view_df))]
+
+        # Tabla Top riesgo
+        st.subheader("Top riesgo (ordenado por probabilidad)")
+        show_cols = [c for c in ["company_id","name","sector","country","proba_12m","blended","risk_band","altman_z","altman_band"] if c in view_df.columns]
+        st.dataframe(view_df.sort_values("proba_12m", ascending=False)[show_cols].head(50)
+                     .style.format({"proba_12m":"{:.2%}","blended":"{:.2%}","altman_z":"{:.2f}"}), use_container_width=True)
+
+        # Exportación
+        st.download_button("⬇️ Descargar scoring filtrado (CSV)", dff.to_csv(index=False).encode("utf-8"),
+                           "scoring_results_portfolio.csv", "text/csv")
+        if HAS_XLSX:
+            out = io.BytesIO()
+            with pd.ExcelWriter(out, engine="xlsxwriter") as writer:
+                dff.to_excel(writer, index=False, sheet_name="Scoring")
+                counts = (dff["risk_band"].value_counts(dropna=False).rename_axis("risk_band").reset_index(name="n"))
+                counts.to_excel(writer, index=False, sheet_name="Bandas")
+            st.download_button("⬇️ Exportar a Excel", out.getvalue(), "scoring_results_portfolio.xlsx",
+                               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+# ====================== TAB 3: Insights del modelo ======================
+with tab3:
+    st.subheader("Importancias de variables")
+    fi_view = fi if (fi is not None and not fi.empty) else xgb_feature_importance_fallback(model, feature_list)
+    if (fi_view is None or fi_view.empty):
+        src_df = st.session_state.get("last_portfolio")
+        y = None
+        if src_df is None:
+            feats_path = BASE / "data" / "processed" / "features.parquet"
+            if feats_path.exists():
+                src_df = pd.read_parquet(feats_path)
+                if "y" in src_df.columns: y = src_df["y"].astype(int).values
+        else:
+            if "y_true" in src_df.columns:
+                y = src_df["y_true"].astype(int).values
+        if src_df is not None and len(src_df):
+            X = ensure_columns(src_df.copy(), feature_list)[feature_list]
+            n = min(2000, len(X))
+            Xs = X.sample(n, random_state=13) if len(X)>n else X
+            ys = None
+            if y is not None and len(Xs)==len(X): ys = y
+            elif y is not None: ys = pd.Series(y, index=X.index).loc[Xs.index].values
+            fi_view = compute_permutation_importance(model, Xs, ys, n_repeats=5)
+    if fi_view is not None and not fi_view.empty:
+        k = st.slider("Top-K", 5, min(50, len(fi_view)), min(20, len(fi_view)), 1)
+        top = fi_view.head(k)
+        if HAS_PLOTLY:
+            st.plotly_chart(px.bar(top, x="feature", y="importance", title="Feature importance"), use_container_width=True)
+        st.dataframe(top, use_container_width=True)
+    else:
+        st.info("No hay importancias disponibles (ni CSV, ni fallback XGB, ni PI).")
+
+    st.markdown("---")
+    st.subheader("Métricas del modelo")
+    if metrics.get("metrics_test"):
+        st.json(metrics)
+    else:
+        live = compute_live_metrics_if_possible(model, feature_list)
+        if live: st.json({"metrics_live_from_features_parquet": live})
+        else:    st.info("Sin metrics.json y sin features.parquet: no es posible calcular métricas.")
+
+# ====================== TAB 4: Analytics ======================
+with tab4:
+    st.subheader("Exploración avanzada de cartera")
+    df_source = st.session_state.get("last_portfolio")
+    if df_source is None or len(df_source)==0:
+        st.info("Carga o genera una cartera en la pestaña anterior para ver analytics.")
+    else:
+        dfa = df_source.copy()
+        # Heatmap sector vs banda
+        if HAS_PLOTLY and "sector" in dfa.columns:
+            st.markdown("##### Heatmap: Sector × Banda (conteos)")
+            piv = dfa.pivot_table(index="sector", columns="risk_band", values="proba_12m", aggfunc="count", fill_value=0)
+            st.plotly_chart(px.imshow(piv, text_auto=True, title="Conteos por sector y banda"), use_container_width=True)
+
+        # Correlaciones simples con la proba
+        st.markdown("##### Correlaciones con probabilidad (|r| top 10)")
+        num_cols = [c for c in dfa.columns if c in base_fields or c in macro_fields]
+        corr = dfa[num_cols + ["proba_12m"]].corr(numeric_only=True)["proba_12m"].drop("proba_12m").abs().sort_values(ascending=False)
+        corr_df = corr.reset_index().rename(columns={"index":"feature","proba_12m":"|corr|"}).head(10)
+        if HAS_PLOTLY:
+            st.plotly_chart(px.bar(corr_df, x="feature", y="|corr|", title="Top correlaciones absolutas con p(default)"), use_container_width=True)
+        st.dataframe(corr_df, use_container_width=True)
+
+        # Dispersión Altman vs proba
+        st.markdown("##### Dispersión Altman vs Probabilidad ML")
+        if "altman_z" in dfa.columns and HAS_PLOTLY:
+            st.plotly_chart(px.scatter(dfa, x="altman_z", y="proba_12m", color="risk_band", hover_data=["sector","country","name"] if "name" in dfa.columns else None,
+                                       title="Altman Z vs Prob. ML"), use_container_width=True)
+
+        # Shock simulador
+        st.markdown("##### Simulador de shock (aplica deltas globales)")
+        csh1, csh2, csh3, csh4, csh5 = st.columns(5)
+        d_wc = csh1.slider("Δ WC/TA", -0.3, 0.3, 0.0, 0.01)
+        d_eb = csh2.slider("Δ EBIT/TA", -0.3, 0.3, 0.0, 0.01)
+        d_oc = csh3.slider("Δ OCF/TA", -0.3, 0.3, 0.0, 0.01)
+        m_me = csh4.slider("× ME/TL", 0.4, 1.6, 1.0, 0.05)
+        d_da = csh5.slider("Δ Debt/Assets", -0.2, 0.2, 0.0, 0.01)
+        if st.button("Aplicar shock virtual"):
+            Xshock = dfa.copy()
+            for col, delta in [("wc_ta",d_wc),("ebit_ta",d_eb),("ocf_ta",d_oc),("debt_assets",d_da)]:
+                if col in Xshock.columns: Xshock[col] = Xshock[col] + delta
+            if "me_tl" in Xshock.columns: Xshock["me_tl"] = (Xshock["me_tl"]*m_me).clip(0.01)
+            Xshock = ensure_columns(Xshock, feature_list)[feature_list]
+            dfa["proba_12m_shock"] = model.predict_proba(Xshock)[:,1]
+            st.success("Shock aplicado (columna `proba_12m_shock`).")
+            if HAS_PLOTLY:
+                st.plotly_chart(px.histogram(dfa, x="proba_12m_shock", nbins=30, title="Distribución post-shock"), use_container_width=True)
+            st.dataframe(dfa[["company_id","name","proba_12m","proba_12m_shock"]].head(50)
+                         .style.format({"proba_12m":"{:.2%}","proba_12m_shock":"{:.2%}"}), use_container_width=True)
+
+# ====================== TAB 5: Model Card ======================
+with tab5:
+    st.markdown("""
+### Modelo
+- Algoritmo: **XGBoost** con **calibración isotónica**.
+- Target: probabilidad de quiebra a **12 meses**.
+- Validación temporal: **train/valid/test** con **SMOTE** (train) y **estandarización**.
+
+### Variables (familias)
+- **Ratios**: liquidez (WC/TA), rentabilidad (EBIT/TA), apalancamiento (Debt/Assets), ventas/activos (S/TA), OCF/TA.
+- **Dinámicas**: ΔYoY, volatilidades rolling.
+- **Sectoriales**: desvío vs mediana sector.
+- **Macro** (si existen): GDP YoY, desempleo, PMI, 10Y–3M, spread crédito (rezagadas).
+
+### Bandas
+- Low: p < MEDIO · Medium: MEDIO ≤ p < ALTO · High: p ≥ ALTO.
+
+### Buenas prácticas
+- Verificar **unidades/escala** y signos.
+- Evitar **leakage** (solo info *as-of*).
+- Usar junto con **Altman** y señales cualitativas.
+""")

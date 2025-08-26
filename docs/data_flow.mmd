@@ -1,0 +1,107 @@
+graph TD
+    subgraph "Data Sources"
+        EXT_API[External APIs<br/>💰 Financial Data<br/>📊 Macro Data]
+        UPLOAD[File Uploads<br/>📄 CSV/Excel<br/>🏢 Company Data]
+        MANUAL[Manual Input<br/>✍️ Streamlit UI<br/>🎯 Individual Scoring]
+    end
+    
+    subgraph "Data Ingestion Layer"
+        INGEST[Data Ingestion Service<br/>📥 Collection & Validation]
+        VALIDATE[Data Validation<br/>✅ Quality Checks<br/>🔍 Schema Validation<br/>📊 Statistical Tests]
+    end
+    
+    subgraph "Data Processing Layer"
+        CLEAN[Data Cleaning<br/>🧹 Missing Values<br/>🔧 Outlier Detection<br/>📏 Normalization]
+        FEATURE[Feature Engineering<br/>⚙️ Ratio Calculation<br/>📈 Trend Analysis<br/>🔄 Transformations]
+        ENRICH[Data Enrichment<br/>🌟 Sector Benchmarks<br/>📊 Macro Integration<br/>📅 Time Features]
+    end
+    
+    subgraph "Storage Layer"
+        RAW_DB[(Raw Data Store<br/>🗄️ PostgreSQL<br/>📊 Staging Tables)]
+        PROC_DB[(Processed Data<br/>🗄️ PostgreSQL<br/>✨ Clean Features)]
+        CACHE[(Cache Layer<br/>⚡ Redis<br/>🚀 Fast Access)]
+    end
+    
+    subgraph "ML Pipeline"
+        TRAIN[Model Training<br/>🧠 XGBoost<br/>🎯 Hyperparameter Tuning<br/>📊 Cross Validation]
+        VALIDATE_ML[Model Validation<br/>📈 Performance Metrics<br/>🎯 ROC-AUC, Brier<br/>📊 Backtesting]
+        DEPLOY[Model Deployment<br/>🚀 Production Ready<br/>📦 Serialization<br/>🔄 Versioning]
+    end
+    
+    subgraph "Prediction Pipeline"
+        PREDICT[Prediction Engine<br/>🎯 ML Inference<br/>📊 Altman Z-Score<br/>🔄 Blended Score]
+        EXPLAIN[Explainability<br/>🔍 Feature Importance<br/>📊 SHAP Values<br/>💡 Insights]
+        STORE_PRED[Store Predictions<br/>💾 Database<br/>📅 Timestamped<br/>🔄 Versioned]
+    end
+    
+    subgraph "Alert Pipeline"
+        MONITOR[Risk Monitoring<br/>👁️ Threshold Checks<br/>📈 Trend Analysis<br/>🚨 Rule Engine]
+        ALERT[Alert Generation<br/>🚨 Smart Alerts<br/>📧 Multi-channel<br/>⚡ Real-time]
+        NOTIFY[Notification Delivery<br/>📧 Email<br/>💬 Slack<br/>👥 Teams]
+    end
+    
+    subgraph "Analytics & Reporting"
+        ANALYTICS[Analytics Engine<br/>📊 Aggregations<br/>📈 Trends<br/>🎯 KPIs]
+        POWERBI[Power BI<br/>📊 Dashboards<br/>📈 Executive Reports<br/>🎯 Drill-down]
+        STREAMLIT[Streamlit UI<br/>🖥️ Interactive<br/>🎯 Self-service<br/>📊 Visualizations]
+    end
+    
+    %% Data Flow Connections
+    EXT_API --> INGEST
+    UPLOAD --> INGEST
+    MANUAL --> PREDICT
+    
+    INGEST --> VALIDATE
+    VALIDATE --> RAW_DB
+    
+    RAW_DB --> CLEAN
+    CLEAN --> FEATURE
+    FEATURE --> ENRICH
+    ENRICH --> PROC_DB
+    
+    PROC_DB --> CACHE
+    PROC_DB --> TRAIN
+    
+    TRAIN --> VALIDATE_ML
+    VALIDATE_ML --> DEPLOY
+    DEPLOY --> PREDICT
+    
+    CACHE --> PREDICT
+    PREDICT --> EXPLAIN
+    PREDICT --> STORE_PRED
+    EXPLAIN --> STORE_PRED
+    
+    STORE_PRED --> MONITOR
+    MONITOR --> ALERT
+    ALERT --> NOTIFY
+    
+    STORE_PRED --> ANALYTICS
+    ANALYTICS --> POWERBI
+    ANALYTICS --> STREAMLIT
+    
+    PROC_DB --> ANALYTICS
+    
+    %% Feedback Loops
+    VALIDATE_ML -.-> FEATURE
+    MONITOR -.-> TRAIN
+    ANALYTICS -.-> VALIDATE
+    
+    %% Styling
+    classDef source fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
+    classDef ingestion fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef processing fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef storage fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef ml fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef prediction fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef alert fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    classDef analytics fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+    
+    class EXT_API,UPLOAD,MANUAL source
+    class INGEST,VALIDATE ingestion
+    class CLEAN,FEATURE,ENRICH processing
+    class RAW_DB,PROC_DB,CACHE storage
+    class TRAIN,VALIDATE_ML,DEPLOY ml
+    class PREDICT,EXPLAIN,STORE_PRED prediction
+    class MONITOR,ALERT,NOTIFY alert
+    class ANALYTICS,POWERBI,STREAMLIT analytics
+

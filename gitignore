@@ -1,0 +1,55 @@
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Archivos de logs y caché
+*.log
+*.out
+*.tmp
+*.swp
+.cache/
+.ipynb_checkpoints/
+
+# Configuración de entorno
+.env
+.env.local
+*.env
+
+# Bases de datos locales
+*.db
+*.sqlite3
+
+# Modelos entrenados y artefactos
+models/
+artifacts/
+checkpoints/
+*.pkl
+*.joblib
+
+# Archivos de datasets grandes
+data/
+*.csv
+*.xlsx
+*.parquet
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Power BI temporales
+*.pbix
+*.pbit
+
+# Documentos temporales
+pasted_content.txt
