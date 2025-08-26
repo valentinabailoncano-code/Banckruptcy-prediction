@@ -13,7 +13,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.pool import QueuePool
 import time
 
-from .models import Base, create_all_tables, create_additional_indexes
+from services.models import Base, create_all_tables, create_additional_indexes
 
 # Configurar logging
 logger = logging.getLogger(__name__)
