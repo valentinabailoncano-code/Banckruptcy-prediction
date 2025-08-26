@@ -22,7 +22,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from database.connection import get_db_session
-from database.models import Usuario
+# Después
+from services.models import Usuario
 
 # Configurar logging
 logger = logging.getLogger(__name__)
