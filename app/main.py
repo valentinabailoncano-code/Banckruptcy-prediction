@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 
 # Configurar path para importar módulos del sistema
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from flask import Flask, send_from_directory, jsonify, request
