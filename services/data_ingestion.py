@@ -19,7 +19,7 @@ import tempfile
 
 from ..preprocessing.data_processor import DataPreprocessor, PreprocessingConfig
 from ...database.connection import get_db_session
-from ...database.models import (
+from ...services.models import (
     Empresa, DatoFinanciero, DatoMacroeconomico, LogETL,
     TamañoEmpresa, TipoDato, EmpresaStatus
 )

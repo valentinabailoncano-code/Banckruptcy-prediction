@@ -26,7 +26,7 @@ import time
 
 from powerbi.connectors.powerbi_connector import PowerBIConnector
 from database.connection import DatabaseManager
-from database.models import Empresa, Prediccion, Alerta
+from services.models import Empresa, Prediccion, Alerta
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)

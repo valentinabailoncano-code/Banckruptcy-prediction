@@ -17,7 +17,7 @@ import requests
 from sqlalchemy.orm import sessionmaker
 
 from database.connection import DatabaseManager
-from database.models import Empresa, Prediccion, Alerta, DatoFinanciero
+from services.models import Empresa, Prediccion, Alerta, DatoFinanciero
 from services.prediction.predictor import PredictionService
 
 # Configurar logging

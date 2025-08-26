@@ -12,7 +12,7 @@ import json
 import logging
 
 from database.connection import DatabaseManager
-from database.models import Empresa, DatoFinanciero, Prediccion, Alerta
+from services.models import Empresa, DatoFinanciero, Prediccion, Alerta
 from powerbi.connectors.powerbi_connector import PowerBIConnector, PowerBIConfig
 from services.auth.auth_service import require_auth, require_permission
 

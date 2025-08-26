@@ -20,7 +20,7 @@ import sqlite3
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.connection import DatabaseManager
-from database.models import Base, Empresa, DatoFinanciero, Prediccion, Alerta
+from services.models import Base, Empresa, DatoFinanciero, Prediccion, Alerta
 from services.preprocessing.data_processor import DataPreprocessor
 from services.model_training.trainer import ModelTrainer
 from services.prediction.predictor import PredictionService

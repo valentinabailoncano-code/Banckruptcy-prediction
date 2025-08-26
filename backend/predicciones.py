@@ -18,7 +18,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from database.connection import get_db_session
-from database.models import (
+from services.models import (
     Empresa, DatoFinanciero, Prediccion, Alerta,
     BandaRiesgo, EstadoPrediccion
 )

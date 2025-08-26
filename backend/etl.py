@@ -18,7 +18,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from database.connection import get_db_session
-from database.models import LogETL, Empresa, DatoFinanciero
+from services.models import LogETL, Empresa, DatoFinanciero
 from services.etl.data_ingestion import (
     DataIngestionService, IngestionConfig,
     ingest_empresas_from_file, ingest_financial_data_from_file

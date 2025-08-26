@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from database.connection import DatabaseManager
-from database.models import (
+from services.models import (
     Empresa, DatoFinanciero, Prediccion, Alerta,
     DatoMacroeconomico, LogETL
 )
